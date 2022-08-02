@@ -195,10 +195,7 @@ def clean_cells(data: Dict[str, Any], nb_source: str,
   # Remove empty cells.
   data["cells"] = [cell for cell in data["cells"] if any(cell["source"])]
 
-  # Clean cell metadata.
-  cell_count = 0
-  for cell in data["cells"]:
-    cell_count += 1
+  for cell_count, cell in enumerate(data["cells"], start=1):
     cell_metadata = cell.get("metadata", {})
     if "id" not in cell_metadata:
       cell_metadata["id"] = notebook_utils.generate_cell_id(
@@ -210,7 +207,7 @@ def clean_cells(data: Dict[str, Any], nb_source: str,
     cell["metadata"] = cell_metadata
 
   # The presence of this field indicates that ouputs are already saved.
-  has_outputs = True if '"output_type"' in nb_source else False
+  has_outputs = '"output_type"' in nb_source
 
   for cell in data["cells"]:
     if cell["cell_type"] == "code":
@@ -297,10 +294,7 @@ def format_nb(
       print("[test] Notebooks are formatted", file=sys.stderr)
       return Status.PASS
 
-  if found_error:
-    return Status.FAIL
-
-  return Status.PASS
+  return Status.FAIL if found_error else Status.PASS
 
 
 def main(argv):

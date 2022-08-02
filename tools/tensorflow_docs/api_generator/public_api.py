@@ -157,12 +157,8 @@ def local_definitions_filter(path: Sequence[str], parent: Any,
     else:
       maybe_submodule = parent.__name__
 
-    # Skip if child was not defined within the parent module
-    in_submodule = maybe_submodule.startswith(parent.__name__)
-    if not in_submodule:
-      continue
-
-    filtered_children.append(pair)
+    if in_submodule := maybe_submodule.startswith(parent.__name__):
+      filtered_children.append(pair)
 
   return filtered_children
 
@@ -273,9 +269,9 @@ class PublicAPIFilter(object):
     if doc_controls.should_skip(obj):
       return True
 
-    if isinstance(parent, type):
-      if doc_controls.should_skip_class_attr(parent, name):
-        return True
+    if isinstance(parent, type) and doc_controls.should_skip_class_attr(
+        parent, name):
+      return True
 
     if doc_controls.should_doc_private(obj):
       return False
@@ -287,7 +283,7 @@ class PublicAPIFilter(object):
       if len(mod_base_dirs) == 1:
         mod_base_dir = mod_base_dirs[0]
         # Check that module is in one of the `self._base_dir`s
-        if not any(base in mod_base_dir.parents for base in self._base_dir):
+        if all(base not in mod_base_dir.parents for base in self._base_dir):
           return True
 
     # Skip objects blocked by the private_map
@@ -295,10 +291,7 @@ class PublicAPIFilter(object):
       return True
 
     # Skip "_" hidden attributes
-    if name.startswith('_') and name not in ALLOWED_DUNDER_METHODS:
-      return True
-
-    return False
+    return bool(name.startswith('_') and name not in ALLOWED_DUNDER_METHODS)
 
   def __call__(self, path: Sequence[str], parent: Any,
                children: Children) -> Children:
@@ -306,9 +299,9 @@ class PublicAPIFilter(object):
 
     # Avoid long waits in cases of pretty unambiguous failure.
     if inspect.ismodule(parent) and len(path) > 10:
-      raise RuntimeError('Modules nested too deep:\n\n{}\n\nThis is likely a '
-                         'problem with an accidental public import.'.format(
-                             '.'.join(path)))
+      raise RuntimeError(
+          f"Modules nested too deep:\n\n{'.'.join(path)}\n\nThis is likely a problem with an accidental public import."
+      )
 
     # Remove things that are not visible.
     children = [(child_name, child_obj)

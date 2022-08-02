@@ -104,9 +104,7 @@ class TestClass:
       Returns the modified variable.
     """
 
-    if x:
-      return x + 'temp'
-    return None
+    return f'{x}temp' if x else None
 
 
 class LinterTest(absltest.TestCase):

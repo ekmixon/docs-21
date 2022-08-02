@@ -424,11 +424,7 @@ def should_skip(obj) -> bool:
   """
   if isinstance(obj, type):
     # For classes, only skip if the attribute is set on _this_ class.
-    if _DO_NOT_DOC in obj.__dict__:
-      return True
-    else:
-      return False
-
+    return _DO_NOT_DOC in obj.__dict__
   # Unwrap fget if the object is a property
   if isinstance(obj, property):
     obj = obj.fget
@@ -441,10 +437,7 @@ def _unwrap_func(obj):
   if isinstance(obj, property):
     return obj.fget
 
-  if isinstance(obj, (classmethod, staticmethod)):
-    return obj.__func__
-
-  return obj
+  return obj.__func__ if isinstance(obj, (classmethod, staticmethod)) else obj
 
 
 def _cls_attr_has_tag(cls, attr, tag):
@@ -455,15 +448,7 @@ def _cls_attr_has_tag(cls, attr, tag):
     return False
   obj = _unwrap_func(obj)
 
-  if isinstance(obj, type):
-    # The attribute is a class. Check __dict__ to see if the attribute is set
-    # on _this_ class, not its parents.
-    if tag in obj.__dict__:
-      return True
-    else:
-      return False
-
-  return hasattr(obj, tag)
+  return tag in obj.__dict__ if isinstance(obj, type) else hasattr(obj, tag)
 
 
 def should_skip_class_attr(cls, name):
@@ -514,8 +499,7 @@ def should_skip_class_attr(cls, name):
       if _cls_attr_has_tag(mro_cls, name, _DOC_IN_CURRENT_AND_SUBCLASSES)
   ]
 
-  all_levels = not_below_levels + for_subclass_levels + doc_below_levels
-  if all_levels:
+  if all_levels := not_below_levels + for_subclass_levels + doc_below_levels:
     # Find the lowest `(level, skip)` pair, and return `skip`
     return min(all_levels)[1]
 

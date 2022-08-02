@@ -87,7 +87,7 @@ class Lint:
     self.run = fn
     self.scope = scope
     self.cond = cond
-    self.name = name if name else fn.__name__
+    self.name = name or fn.__name__
     self.message = message.strip() if message else ""
     self.style = None  # Added on style load.
 
@@ -113,8 +113,8 @@ def lint(fn=None, *, message=None, scope=None, cond=None):
   if fn is None:
     return functools.partial(lint, message=message, scope=scope, cond=cond)
 
-  scope = scope if scope else Options.Scope.CELLS
-  cond = cond if cond else Options.Cond.ANY
+  scope = scope or Options.Scope.CELLS
+  cond = cond or Options.Cond.ANY
 
   @functools.wraps(fn)
   def wrapper(*args, **kwargs):

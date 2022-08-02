@@ -67,9 +67,8 @@ license_re = re.compile("#@title Licensed under the Apache License")
 def license_check(args):
   if license_re.search(args["cell_source"]):
     return True
-  else:
-    template_url = "https://github.com/tensorflow/docs/blob/master/tools/templates/notebook.ipynb"
-    fail(f"License cell missing or doesn't follow template: {template_url}")
+  template_url = "https://github.com/tensorflow/docs/blob/master/tools/templates/notebook.ipynb"
+  fail(f"License cell missing or doesn't follow template: {template_url}")
 
 
 @lint(scope=Options.Scope.FILE)
@@ -142,10 +141,7 @@ def split_doc_path(filepath):
     return split_path_on_dir(fp_full, "docs")
   elif "g3doc" in fp_full.parts:
     idx = fp_full.parts.index("g3doc")
-    if fp_full.parts[idx + 1] == "en":
-      offset = 2
-    else:
-      offset = 1
+    offset = 2 if fp_full.parts[idx + 1] == "en" else 1
     return split_path_on_dir(fp_full, "g3doc", offset=offset)
   else:
     # Unknown setup. Return empty root and unsplit path.
@@ -167,7 +163,7 @@ def button_colab(args):
     docs_dir = pathlib.Path("site/en")
 
   base_url = f"colab.research.google.com/github/{repo}/blob/master"
-  this_url = "https://" + str(base_url / docs_dir / rel_path)
+  this_url = f"https://{str(base_url / docs_dir / rel_path)}"
 
   if is_button_cell_re.search(cell_source) and cell_source.find(this_url) != -1:
     return True
@@ -224,7 +220,7 @@ def button_github(args):
     docs_dir = pathlib.Path("site/en")
 
   base_url = f"github.com/{repo}/blob/master"
-  this_url = "https://" + str(base_url / docs_dir / rel_path)
+  this_url = f"https://{str(base_url / docs_dir / rel_path)}"
 
   if is_button_cell_re.search(cell_source) and cell_source.find(this_url) != -1:
     return True
@@ -258,7 +254,7 @@ def button_website(args):
   if "r1" in rel_path.parts:
     return True  # No website button for TF 1.x docs.
 
-  if str(docs_dir) == "site/zh-cn" or str(docs_dir) == "site/zh-tw":
+  if str(docs_dir) in {"site/zh-cn", "site/zh-tw"}:
     base_url = "https://tensorflow.google.cn/"
   else:
     base_url = "https://www.tensorflow.org/"
@@ -271,10 +267,9 @@ def button_website(args):
 
   if is_button_cell_re.search(cell_source) and re.search(this_url, cell_source):
     return True
-  else:
-    # If included verbatim, bracket will fail lint. That's desired.
-    url_format = f"{base_url}<OPTIONAL-SUBSITE-PATH>/{url_path}"
-    fail(f"'View on' button URL doesn't match pattern: {url_format}")
+  # If included verbatim, bracket will fail lint. That's desired.
+  url_format = f"{base_url}<OPTIONAL-SUBSITE-PATH>/{url_path}"
+  fail(f"'View on' button URL doesn't match pattern: {url_format}")
 
 
 @lint(
@@ -294,10 +289,9 @@ def button_hub(args):
 
   if is_button_cell_re.search(cell_source) and cell_source.find(hub_url) != -1:
     return True
-  else:
-    # If included verbatim, bracket will fail lint. That's desired.
-    url_format = f"{hub_url}<MODEL-OR-COLLECTION>"
-    fail(f"'TFHub' button URL doesn't match pattern: {url_format}")
+  # If included verbatim, bracket will fail lint. That's desired.
+  url_format = f"{hub_url}<MODEL-OR-COLLECTION>"
+  fail(f"'TFHub' button URL doesn't match pattern: {url_format}")
 
 
 @lint(
@@ -317,7 +311,7 @@ def button_r1_extra(args):
     return True
 
   download_url = "https://storage.googleapis.com/tensorflow_docs/"
-  if str(docs_dir) == "site/zh-cn" or str(docs_dir) == "site/zh-tw":
+  if str(docs_dir) in {"site/zh-cn", "site/zh-tw"}:
     base_url = "https://tensorflow.google.cn/"
   else:
     base_url = "https://www.tensorflow.org/"

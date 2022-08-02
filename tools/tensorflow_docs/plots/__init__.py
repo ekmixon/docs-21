@@ -86,27 +86,24 @@ class HistoryPlotter(object):
         self.color_table[name] = color
 
       train_value = history.history[metric]
-      val_value = history.history['val_' + metric]
+      val_value = history.history[f'val_{metric}']
       if smoothing_std is not None:
         train_value = _smooth(train_value, std=smoothing_std)
         val_value = _smooth(val_value, std=smoothing_std)
 
       plt.plot(
-          history.epoch,
-          train_value,
-          color=color,
-          label=name.title() + ' Train')
+          history.epoch, train_value, color=color, label=f'{name.title()} Train')
       plt.plot(
           history.epoch,
           val_value,
           '--',
-          label=name.title() + ' Val',
-          color=color)
+          label=f'{name.title()} Val',
+          color=color,
+      )
 
     plt.xlabel('Epochs')
     plt.ylabel(metric.replace('_', ' ').title())
     plt.legend()
 
-    plt.xlim(
-        [0, max([history.epoch[-1] for name, history in histories.items()])])
+    plt.xlim([0, max(history.epoch[-1] for name, history in histories.items())])
     plt.grid(True)

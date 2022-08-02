@@ -101,17 +101,15 @@ def _add_proto_fields(path, root, children):
     else:
       type_name = type_name.lower().replace('type_', '')
 
-    doc_parts.append(type_name)
-    doc_parts.append(name)
-    doc = '`{}`'.format(' '.join(doc_parts))
+    doc_parts.extend((type_name, name))
+    doc = f"`{' '.join(doc_parts)}`"
     prop = property(fget=lambda x: x, doc=doc)
     field_properties[name] = prop
 
   for name, prop in field_properties.items():
     setattr(root, name, prop)
 
-  children = dict(children)
-  children.update(field_properties)
+  children = dict(children) | field_properties
   children = sorted(children.items(), key=lambda item: item[0])
 
   return children
@@ -130,14 +128,9 @@ def _filter_builtin_modules(path, root, children):
   """
   del path
   del root
-  # filter out 'builtin' modules
-  filtered_children = []
-  for name, child in children:
-    # Do not descend into built-in modules
-    if inspect.ismodule(child) and child.__name__ in sys.builtin_module_names:
-      continue
-    filtered_children.append((name, child))
-  return filtered_children
+  return [(name, child) for name, child in children
+          if not inspect.ismodule(child)
+          or child.__name__ not in sys.builtin_module_names]
 
 
 def _traverse_internal(root, visitors, stack, path):
@@ -156,11 +149,8 @@ def _traverse_internal(root, visitors, stack, path):
     children = []
 
   # Break cycles.
-  filtered_children = []
-  for name, child in children:
-    if any(child is item for item in new_stack):  # `in`, but using `is`
-      continue
-    filtered_children.append((name, child))
+  filtered_children = [(name, child) for name, child in children
+                       if all(child is not item for item in new_stack)]
   children = filtered_children
 
   # Apply all callbacks, allowing each to filter the children

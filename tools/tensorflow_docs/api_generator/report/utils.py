@@ -59,9 +59,7 @@ class ApiReport:
     # name = 'tf.keras.layers'; name_list = ['tf', 'keras', 'layers']
     # Number of dots in name == 2 == len(name_list) - 1
     dot_count = len(name_list) - 1
-    if dot_count == 1:
-      return name_list[0]
-    return '.'.join(name_list[:2])
+    return name_list[0] if dot_count == 1 else '.'.join(name_list[:2])
 
   def _make_constructor_info(
       self, class_page_info: parser.ClassPageInfo) -> parser.PageInfo:

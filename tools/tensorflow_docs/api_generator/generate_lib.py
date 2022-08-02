@@ -180,11 +180,8 @@ class Module(TocNode):
 
   @property
   def title(self):
-    if self.full_name.count('.') > 1:
-      title = self.full_name.split('.')[-1]
-    else:
-      title = self.full_name
-    return title
+    return (self.full_name.split('.')[-1]
+            if self.full_name.count('.') > 1 else self.full_name)
 
   @property
   def children(self):
@@ -279,7 +276,7 @@ class GenerateToc(object):
         # For example, if module is `tf.keras.applications.densenet` then its
         # parent is `tf.keras.applications`.
         parent_module = '.'.join(module.split('.')[:-1])
-        parent_mod_obj = toc_graph.get(parent_module, None)
+        parent_mod_obj = toc_graph.get(parent_module)
         if parent_mod_obj is not None:
           parent_mod_obj.add_submodule(mod)
       else:
@@ -314,10 +311,9 @@ class GenerateToc(object):
       A list of dictionaries containing child's title and path.
     """
 
-    children_list = []
-    children_list.append(
-        collections.OrderedDict([('title', 'Overview'), ('path', mod.path)]))
-
+    children_list = [
+        collections.OrderedDict([('title', 'Overview'), ('path', mod.path)])
+    ]
     for child in mod.children:
       child_yaml_content = [('title', child.title), ('path', child.path)]
 
@@ -449,9 +445,7 @@ def _get_headers(page_info: parser.PageInfo, search_hints: bool) -> List[str]:
       headers.append('')
     headers.append(page_info.get_metadata_html())
   else:
-    headers.append('robots: noindex')
-    headers.append('')
-
+    headers.extend(('robots: noindex', ''))
   return headers
 
 
@@ -704,7 +698,7 @@ def extract(py_modules,
   return accumulator
 
 
-EXCLUDED = set(['__init__.py', 'OWNERS', 'README.txt'])
+EXCLUDED = {'__init__.py', 'OWNERS', 'README.txt'}
 
 
 def replace_refs(

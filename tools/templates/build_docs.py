@@ -81,7 +81,7 @@ def gen_api_docs():
 
 def main(argv):
   if argv[1:]:
-    raise ValueError('Unrecognized arguments: {}'.format(argv[1:]))
+    raise ValueError(f'Unrecognized arguments: {argv[1:]}')
 
   gen_api_docs()
 

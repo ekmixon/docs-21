@@ -41,9 +41,7 @@ def search_wordlist(wordlist, src_str):
   for word in wordlist:
     # Word-boundary and ignore between path seperator '/'.
     if re.search(rf"[^/]\b{word}\b[^/]", src_str, re.IGNORECASE):
-      alt_word = wordlist[word]
-      if not alt_word:
-        alt_word = "n/a"
+      alt_word = wordlist[word] or "n/a"
       found_words[word] = alt_word
   return found_words
 
@@ -63,8 +61,7 @@ _INCLUSIVE_WORDLIST = {
     cond=Options.Cond.ALL)
 def inclusive_language(args):
   """Test for words found in inclusive wordlist and recommend alternatives."""
-  found_words = search_wordlist(_INCLUSIVE_WORDLIST, args["cell_source"])
-  if found_words:
+  if found_words := search_wordlist(_INCLUSIVE_WORDLIST, args["cell_source"]):
     words = ", ".join([f"{word} => {alt}" for word, alt in found_words.items()])
     fail(f"Use inclusive language where possible and accurate. Found: {words}")
   else:
@@ -80,8 +77,8 @@ _SECOND_PERSON_WORDLIST = {"we": "you", "we're": "you are"}
     cond=Options.Cond.ALL)
 def second_person(args):
   """Test for first person usage in doc and recommend second person."""
-  found_words = search_wordlist(_SECOND_PERSON_WORDLIST, args["cell_source"])
-  if found_words:
+  if found_words := search_wordlist(_SECOND_PERSON_WORDLIST,
+                                    args["cell_source"]):
     words = ", ".join([f"{word} => {alt}" for word, alt in found_words.items()])
     fail(f"Prefer second person instead of first person. Found: {words}")
   else:

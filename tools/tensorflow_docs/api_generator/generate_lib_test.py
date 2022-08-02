@@ -243,8 +243,7 @@ class GenerateTest(absltest.TestCase):
 
     with self.assertRaises(IOError):
       # This should fail. The OWNERS file should not be copied
-      with open(os.path.join(test_out_dir, 'b/OWNERS')) as f:
-        content = f.read()
+      content = pathlib.Path(os.path.join(test_out_dir, 'b/OWNERS')).read_text()
 
   def _get_test_page_info(self):
     page_info = parser.FunctionPageInfo(

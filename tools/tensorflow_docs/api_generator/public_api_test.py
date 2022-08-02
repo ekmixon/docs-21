@@ -54,10 +54,13 @@ class PublicApiTest(absltest.TestCase):
     for api_visitor in api_visitors:
       children = api_visitor(path, parent, children)
 
-    self.assertEqual(set([(
-        'tf',
-        'test',
-    )]), visitor.symbols)
+    self.assertEqual(
+        {(
+            'tf',
+            'test',
+        )},
+        visitor.symbols,
+    )
     self.assertEqual('dummy', visitor.last_parent)
     self.assertEqual([('name1', 'thing1'), ('name2', 'thing2')],
                      visitor.last_children)

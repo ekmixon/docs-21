@@ -51,8 +51,7 @@ def sort_toc(toc: Toc, labels: Iterable[str]) -> Toc:
     more_specific_labels = [l for l in labels if len(l) > len(label)]
     for entry in remaining_entries[:]:  # copy so we can remove() later
       title = entry.get('title', '')
-      better_match_exists = any(
-          [title.startswith(l) for l in more_specific_labels])
+      better_match_exists = any(title.startswith(l) for l in more_specific_labels)
       if title.startswith(label) and not better_match_exists:
         new_toc.append(entry)
         # Remove the matched entry so it doesn't duplicate, and so we can track

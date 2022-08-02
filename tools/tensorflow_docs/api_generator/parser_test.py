@@ -142,8 +142,7 @@ class ExampleDataclass:
   y: bool = False
 
   def add(self, x: int, y: int) -> int:
-    q: int = x + y
-    return q
+    return x + y
 
 
 class ParserTest(parameterized.TestCase):
@@ -822,9 +821,10 @@ class ParserTest(parameterized.TestCase):
         code_url_prefix='/')
 
     function_info = parser.docs_for_object(
-        full_name='%s.%s' % (cls, method),
+        full_name=f'{cls}.{method}',
         py_object=py_object,
-        parser_config=parser_config)
+        parser_config=parser_config,
+    )
 
     self.assertIsNone(function_info.defined_in)
 
@@ -1141,11 +1141,10 @@ class TestIgnoreLineInBlock(parameterized.TestCase):
         for start, end in zip(block_start, block_end)
     ]
 
-    ignored_lines = []
-    for line in text.splitlines():
-      if any(filter_block(line) for filter_block in filters):
-        ignored_lines.append(line)
-
+    ignored_lines = [
+        line for line in text.splitlines() if any(
+            filter_block(line) for filter_block in filters)
+    ]
     self.assertEqual('\n'.join(ignored_lines), expected_ignored_lines)
 
   def test_clean_text(self):
@@ -1164,11 +1163,10 @@ class TestIgnoreLineInBlock(parameterized.TestCase):
 
     filters = [parser.IgnoreLineInBlock('```', '```')]
 
-    clean_text = []
-    for line in text.splitlines():
-      if not any(filter_block(line) for filter_block in filters):
-        clean_text.append(line)
-
+    clean_text = [
+        line for line in text.splitlines()
+        if not any(filter_block(line) for filter_block in filters)
+    ]
     expected_clean_text = 'Useful information.\nDon\'t ignore.\nStuff.'
 
     self.assertEqual('\n'.join(clean_text), expected_clean_text)
@@ -1469,33 +1467,45 @@ class TestGenerateSignature(parameterized.TestCase, absltest.TestCase):
 
   def test_signature_method_wrong_self_name(self):
 
-    # Calling these classes all `Cls` confuses inspect.getsource.
-    # Use unique names.
+  # Calling these classes all `Cls` confuses inspect.getsource.
+  # Use unique names.
+
+
+
     class Cls1:
 
-      def method(x):  # pylint: disable=no-self-argument
+      def method(self):  # pylint: disable=no-self-argument
         pass
+
 
     info = self._setup_class_info(Cls1, 'method')
     self.assertEqual('()', str(info.methods[0].signature))
 
   def test_signature_method_star_args(self):
 
+
+
+
     class Cls2:
 
-      def method(*args):  # pylint: disable=no-method-argument
+      def method(self):  # pylint: disable=no-method-argument
         pass
+
 
     info = self._setup_class_info(Cls2, 'method')
     self.assertEqual('(\n    *args\n)', str(info.methods[0].signature))
 
   def test_signature_classmethod_wrong_cls_name(self):
 
+
+
+
     class Cls3:
 
       @classmethod
-      def method(x):  # pylint: disable=bad-classmethod-argument
+      def method(cls):  # pylint: disable=bad-classmethod-argument
         pass
+
 
     info = self._setup_class_info(Cls3, 'method')
     self.assertEqual('()', str(info.methods[0].signature))
@@ -1513,10 +1523,14 @@ class TestGenerateSignature(parameterized.TestCase, absltest.TestCase):
 
   def test_signature_new(self):
 
+
+
+
     class Cls5:
 
-      def __new__(x):  # pylint: disable=bad-classmethod-argument
+      def __new__(cls):  # pylint: disable=bad-classmethod-argument
         pass
+
 
     info = self._setup_class_info(Cls5, '__new__')
     self.assertEqual('()', str(info.methods[0].signature))
